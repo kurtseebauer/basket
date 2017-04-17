@@ -33,7 +33,6 @@ class KAboutData;
 
 class AboutData;
 class LikeBack;
-class DebugWindow;
 class BackgroundManager;
 class SystemTray;
 class BNPView;
@@ -56,7 +55,6 @@ private:
 public:
     // Global Variables:
     static LikeBack          *likeBack;
-    static DebugWindow       *debugWindow;
     static BackgroundManager *backgroundManager;
     static SystemTray        *systemTray;
     static BNPView           *bnpView;

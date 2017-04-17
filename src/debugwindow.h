@@ -22,36 +22,6 @@
 #define DEBUGWINDOW_H
 
 #include <QDebug>
-
-#include <QWidget>
-
-class QVBoxLayout;
-class QTextBrowser;
-class QString;
-class QCloseEvent;
-
-/**A simple window that display text through debugging messages.
-  *@author Sébastien Laoût
-  */
-
-class DebugWindow : public QWidget
-{
-    Q_OBJECT
-public:
-    /** Construtor and destructor */
-    DebugWindow(QWidget *parent = 0);
-    ~DebugWindow();
-    /** Methods to post a message to the debug window */
-    Q_INVOKABLE void postMessage(const QString msg);
-    DebugWindow& operator<<(const QString msg);
-    void insertHLine();
-protected:
-    virtual void closeEvent(QCloseEvent *event);
-private:
-    QVBoxLayout  *layout;
-    QTextBrowser *textBrowser;
-};
-
 #define DEBUG_WIN qDebug()
 
 #endif // DEBUGWINDOW_H

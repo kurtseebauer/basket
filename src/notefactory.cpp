@@ -340,18 +340,6 @@ Note* NoteFactory::dropNote(const QMimeData *source, BasketScene *parent, bool f
         return 0;
     }
 
-    /* Debug */
-    if (Global::debugWindow) {
-        *Global::debugWindow << "<b>Drop :</b>";
-        for (int i = 0; i < formats.size(); ++i)
-            *Global::debugWindow << "\t[" + QString::number(i) + "] " + formats[i];
-        switch (action) { // The source want that we:
-        case Qt::CopyAction:       *Global::debugWindow << ">> Drop action: Copy";       break;
-        case Qt::MoveAction:       *Global::debugWindow << ">> Drop action: Move";       break;
-        case Qt::LinkAction:       *Global::debugWindow << ">> Drop action: Link";       break;
-        default:                     *Global::debugWindow << ">> Drop action: Unknown";           //  supported by Qt!
-        }
-    }
 
     /* Copy or move a Note */
     if (NoteDrag::canDecode(source)) {
@@ -416,10 +404,7 @@ Note* NoteFactory::dropNote(const QMimeData *source, BasketScene *parent, bool f
         // Get the array and create a QChar array of 1/2 of the size
         QByteArray mozilla = source->data("text/x-moz-url");
         QVector<QChar> chars(mozilla.count() / 2);
-        // A small debug work to know the value of each bytes
-        if (Global::debugWindow)
-            for (int i = 0; i < mozilla.count(); i++)
-                *Global::debugWindow << QString("'") + QChar(mozilla[i]) + "' " + QString::number(int(mozilla[i]));
+
         // text/x-moz-url give the URL followed by the link title and separated by OxOA (10 decimal: new line?)
         uint size   = 0;
         QChar *name = 0L;
@@ -707,9 +692,6 @@ Note* NoteFactory::copyFileAndLoad(const QUrl &url, BasketScene *parent)
     QString fileName = fileNameForNewNote(parent, url.fileName());
     QString fullPath = parent->fullPathForFileName(fileName);
 
-    if (Global::debugWindow)
-        *Global::debugWindow << "copyFileAndLoad: " + url.toDisplayString() + " to " + fullPath;
-
 //  QString annotations = i18n("Original file: %1", url.toDisplayString());
 //  parent->dontCareOfCreation(fullPath);
 
@@ -727,9 +709,6 @@ Note* NoteFactory::moveFileAndLoad(const QUrl &url, BasketScene *parent)
     QString fileName = fileNameForNewNote(parent, url.fileName());
     QString fullPath = parent->fullPathForFileName(fileName);
 
-    if (Global::debugWindow)
-        *Global::debugWindow << "moveFileAndLoad: " + url.toDisplayString() + " to " + fullPath;
-
 //  QString annotations = i18n("Original file: %1", url.toDisplayString());
 //  parent->dontCareOfCreation(fullPath);
 
@@ -737,7 +716,6 @@ Note* NoteFactory::moveFileAndLoad(const QUrl &url, BasketScene *parent)
                                       KIO::Overwrite | KIO::Resume);
 
     parent->connect(copyJob, &KIO::CopyJob::copyingDone, parent, &BasketScene::slotCopyingDone2);
-
 
     NoteType::Id type = typeForURL(url, parent); // Use the type of the original file because the target doesn't exist yet
     return loadFile(fileName, type, parent);
@@ -787,12 +765,6 @@ NoteType::Id NoteFactory::typeForURL(const QUrl &url, BasketScene */*parent*/)
     QMimeDatabase db;
     QMimeType mimeType = db.mimeTypeForUrl(url);
 
-    if (Global::debugWindow) {
-        if (mimeType.isValid())
-            *Global::debugWindow << "typeForURL: " + url.toDisplayString() + " ; MIME type = " + mimeType.name();
-        else
-            *Global::debugWindow << "typeForURL: mimeType is empty for " + url.toDisplayString();
-    }
 
     //Go from specific to more generic
     if (maybeLauncher(mimeType))                           return NoteType::Launcher;

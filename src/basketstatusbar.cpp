@@ -134,15 +134,9 @@ void BasketStatusBar::updateStatusBarHint()
 {
     QString message = "";
 
-    if (Global::bnpView->currentBasket()->isDuringDrag())
+    if (Global::bnpView->currentBasket()->isDuringDrag()) {
         message = i18n("Ctrl+drop: copy, Shift+drop: move, Shift+Ctrl+drop: link.");
-// Too much noise information:
-//  else if (currentBasket()->inserterShown() && currentBasket()->inserterSplit() && !currentBasket()->inserterGroup())
-//      message = i18n("Click to insert a note, right click for more options. Click on the right of the line to group instead of insert.");
-//  else if (currentBasket()->inserterShown() && currentBasket()->inserterSplit() && currentBasket()->inserterGroup())
-//      message = i18n("Click to group a note, right click for more options. Click on the left of the line to group instead of insert.");
-    else if (Global::debugWindow)
-        message = "DEBUG: " + Global::bnpView->currentBasket()->folderName();
+    }
 
     setStatusText(message);
 }

@@ -4152,7 +4152,7 @@ void BasketScene::noteOpen(Note *note)
   */
 bool KRun__displayOpenWithDialog(const QList<QUrl>& lst, QWidget *window, bool tempFiles, const QString &text)
 {
-    if (qApp && !KAuthorized::authorizeKAction("openwith")) {
+    if (qApp && !KAuthorized::authorizeAction("openwith")) {
         KMessageBox::sorry(window, i18n("You are not authorized to open this file.")); // TODO: Better message, i18n freeze :-(
         return false;
     }
@@ -4160,7 +4160,7 @@ bool KRun__displayOpenWithDialog(const QList<QUrl>& lst, QWidget *window, bool t
     if (l.exec()) {
         KService::Ptr service = l.service();
         if (!!service)
-            return KRun::run(*service, lst, window, tempFiles);
+            return KRun::runService(*service, lst, window, tempFiles);
         //qDebug(250) << "No service set, running " << l.text() << endl;
         return KRun::run(l.text(), lst, window); // TODO handle tempFiles
     }
@@ -4997,10 +4997,14 @@ void BasketScene::focusOutEvent(QFocusEvent*)
 void BasketScene::ensureNoteVisible(Note *note)
 {
     if (!note->isShown()) // Logical!
+    {
         return;
+    }
 
     if (note == editedNote()) // HACK: When filtering while editing big notes, etc... cause unwanted scrolls
+    {
         return;
+    }
 
 	m_view->ensureVisible(note);
 /*//    int bottom = note->y() + qMin(note->height(),                                             visibleHeight());

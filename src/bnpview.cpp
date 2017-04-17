@@ -2273,8 +2273,9 @@ void BNPView::slotBasketChanged()
 {
     m_actFoldBasket->setEnabled(canFold());
     m_actExpandBasket->setEnabled(canExpand());
-    if (currentBasket()->decoration()->filterData().isFiltering)
+    if (currentBasket()->decoration()->filterData().isFiltering) {
         currentBasket()->decoration()->filterBar()->show(); // especially important for Filter all
+    }
 	setFiltering(currentBasket() && currentBasket()->decoration()->filterData().isFiltering);
     this->canUndoRedoChanged();
 }
@@ -2677,11 +2678,6 @@ void BNPView::handleCommandLine()
     QString customDataFolder = parser->value("data-folder");
     if (!customDataFolder.isNull() && !customDataFolder.isEmpty()) {
         Global::setCustomSavesFolder(customDataFolder);
-    }
-    /* Debug window */
-    if (parser->isSet("debug")) {
-        new DebugWindow();
-        Global::debugWindow->show();
     }
 
     /* Crash Handler to Mail Developers when Crashing: */
