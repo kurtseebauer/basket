@@ -21,7 +21,7 @@ endmacro(basket_standalone_unit_test)
 
 
 macro(basket_full_unit_test _testname)
-    include_directories(${KDE4_INCLUDES} ${KDE4_INCLUDE_DIR} ${SOPRANO_INCLUDE_DIR})
+    include_directories(${KDE4_INCLUDES} ${KDE4_INCLUDE_DIR})
       
     #set(baskettest_SRCS " ")
     foreach (cpp ${basketcommon_LIB_SRCS}) 
