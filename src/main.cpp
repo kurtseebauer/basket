@@ -1,3 +1,4 @@
+
 /***************************************************************************
  *   Copyright (C) 2003 by Sébastien Laoût                                 *
  *   slaout@linux62.org                                                    *
@@ -23,6 +24,7 @@
 #include <config.h>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include <QDir>
 #include "basket_options.h"
 
 #include "application.h"
@@ -30,7 +32,6 @@
 #include "settings.h"
 #include "global.h"
 #include "backup.h"
-#include "kde4_migration.h"
 
 int main(int argc, char *argv[])
 {
@@ -44,14 +45,7 @@ int main(int argc, char *argv[])
     opts->process(app);
     Global::basketAbout.processCommandLine(opts); //show author, license information and exit
 
-    {
-        Kde4Migrator migrator;
-        if (migrator.migrateKde4Data())
-            migrator.showPostMigrationDialog();
-    }
-
     app.tryLoadFile(opts->positionalArguments(), QDir::currentPath());
-
 
     // Initialize the config file
     Global::basketConfig = KSharedConfig::openConfig("basketrc");
