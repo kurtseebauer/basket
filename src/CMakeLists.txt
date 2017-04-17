@@ -57,7 +57,7 @@ IF(HAVE_BALOO)
   list(INSERT basketcommon_LIB_SRCS 10 nepomukintegration.cpp)
 ENDIF(HAVE_BALOO)
 
-qt5_wrap_ui(basket_FORM_HDRS passwordlayout.ui basketproperties.ui settings_versionsync.ui)
+qt5_wrap_ui(basket_FORM_HDRS basketproperties.ui settings_versionsync.ui)
 
 QT5_ADD_DBUS_ADAPTOR(basketcommon_LIB_SRCS org.basket.BNPView.xml bnpview.h BNPView)
 

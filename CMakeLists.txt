@@ -69,10 +69,6 @@ find_package(KF5 REQUIRED COMPONENTS
   XmlGui
 )
 
-find_package(Phonon4Qt5 REQUIRED)
-
-#find_package(KF5 COMPONENTS Baloo)
-
 
 IF(GPGME_FOUND)
   SET(HAVE_LIBGPGME 1)
@@ -85,8 +81,6 @@ ELSE(GPGME_FOUND)
     MESSAGE("GPG not found, configuring without")
   ENDIF (BASKET_DISABLE_GPG)
 ENDIF(GPGME_FOUND)
-
-#TODO: find meinproc
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h )
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})

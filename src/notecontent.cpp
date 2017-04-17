@@ -21,37 +21,25 @@
 #include "notecontent.h"
 
 #include <QtCore/QBuffer>
-#include <QtCore/QFile>
 #include <QtCore/QFileInfo>
-#include <QtCore/QDateTime>
 #include <QtCore/QDir>
-#include <QtCore/QRegExp>
-#include <QtCore/QStringList>
 #include <QtGui/QAbstractTextDocumentLayout>    //For m_simpleRichText->documentLayout()
 #include <QtGui/QBitmap>                        //For QPixmap::createHeuristicMask()
-#include <QtGui/QFontMetrics>
 #include <QtGui/QMovie>
 #include <QtGui/QPainter>
-#include <QtGui/QPixmap>
-#include <QWidget>
 #include <QtNetwork/QNetworkReply>
 #include <QtXml/QDomElement>
 #include <QTextBlock>
 #include <QTextCodec>
 #include <QMimeDatabase>
 #include <QMimeData>
-#include <QLocale>
 
-#include <KIO/AccessManager>
 #include <KService>
 #include <KFileMetaData/KFileMetaData/Extractor>
 #include <KFileItem>
 #include <KIO/PreviewJob>                   //For KIO::file_preview(...)
 #include <KEncodingProber>
 #include <KLocalizedString>
-
-#include <phonon/AudioOutput>
-#include <phonon/MediaObject>
 
 #include "note.h"
 #include "basketscene.h"
@@ -63,7 +51,6 @@
 #include "settings.h"
 #include "debugwindow.h"
 #include "htmlexporter.h"
-#include "config.h"
 #include "file_metadata.h"
 
 /**
@@ -190,10 +177,6 @@ NoteType::Id AnimationContent::type() const
 {
     return NoteType::Animation;
 }
-NoteType::Id SoundContent::type() const
-{
-    return NoteType::Sound;
-}
 NoteType::Id FileContent::type() const
 {
     return NoteType::File;
@@ -235,10 +218,7 @@ QString AnimationContent::typeName() const
 {
     return i18n("Animation");
 }
-QString SoundContent::typeName() const
-{
-    return i18n("Sound");
-}
+
 QString FileContent::typeName() const
 {
     return i18n("File");
@@ -280,10 +260,7 @@ QString AnimationContent::lowerTypeName() const
 {
     return "animation";
 }
-QString SoundContent::lowerTypeName() const
-{
-    return "sound";
-}
+
 QString FileContent::lowerTypeName() const
 {
     return "file";
@@ -379,11 +356,6 @@ QString AnimationContent::toHtml(const QString &/*imageName*/, const QString &cu
     return QString("<img src=\"%1\">").arg(cuttedFullPath.isEmpty() ? fullPath() : cuttedFullPath);
 }
 
-QString SoundContent::toHtml(const QString &/*imageName*/, const QString &cuttedFullPath)
-{
-    return QString("<a href=\"%1\">%2</a>").arg((cuttedFullPath.isEmpty() ? fullPath() : cuttedFullPath), fileName());
-} // With the icon?
-
 QString FileContent::toHtml(const QString &/*imageName*/, const QString &cuttedFullPath)
 {
     return QString("<a href=\"%1\">%2</a>").arg((cuttedFullPath.isEmpty() ? fullPath() : cuttedFullPath), fileName());
@@ -471,10 +443,7 @@ bool AnimationContent::useFile() const
 {
     return true;
 }
-bool SoundContent::useFile() const
-{
-    return true;
-}
+
 bool FileContent::useFile() const
 {
     return true;
@@ -516,10 +485,7 @@ bool AnimationContent::canBeSavedAs() const
 {
     return true;
 }
-bool SoundContent::canBeSavedAs() const
-{
-    return true;
-}
+
 bool FileContent::canBeSavedAs() const
 {
     return true;
@@ -561,10 +527,7 @@ QString AnimationContent::saveAsFilters() const
 {
     return "image/gif";
 } // TODO: MNG...
-QString SoundContent::saveAsFilters() const
-{
-    return "audio/mp3 audio/ogg";
-} // TODO: OGG...
+
 QString FileContent::saveAsFilters() const
 {
     return "*";
@@ -606,10 +569,7 @@ bool AnimationContent::match(const FilterData &/*data*/)
 {
     return false;
 }
-bool SoundContent::match(const FilterData &data)
-{
-    return fileName().contains(data.string);
-}
+
 bool FileContent::match(const FilterData &data)
 {
     return fileName().contains(data.string);
@@ -651,10 +611,7 @@ QString AnimationContent::editToolTipText() const
 {
     return i18n("Edit this animation");
 }
-QString SoundContent::editToolTipText() const
-{
-    return i18n("Edit the file name of this sound");
-}
+
 QString FileContent::editToolTipText() const
 {
     return i18n("Edit the name of this file");
@@ -696,10 +653,7 @@ QString AnimationContent::cssClass() const
 {
     return "";
 }
-QString SoundContent::cssClass() const
-{
-    return "sound";
-}
+
 QString FileContent::cssClass() const
 {
     return "file";
@@ -783,10 +737,7 @@ QString AnimationContent::customOpenCommand()
 {
     return (Settings::isAnimationUseProg() && ! Settings::animationProg().isEmpty() ? Settings::animationProg() : QString());
 }
-QString SoundContent::customOpenCommand()
-{
-    return (Settings::isSoundUseProg()     && ! Settings::soundProg().isEmpty()     ? Settings::soundProg()     : QString());
-}
+
 
 void LinkContent::serialize(QDataStream &stream)
 {
@@ -1359,8 +1310,6 @@ qreal AnimationContent::setWidthAndGetHeight(qreal width)
       m_graphicsPixmap.setScale(1.0);
       return pixmap.height();
     }
-    
-    return 0;
 }
 
 bool AnimationContent::loadFromFile(bool lazyLoad)
@@ -1610,64 +1559,6 @@ void FileContent::exportToHTML(HTMLExporter *exporter, int indent)
     QString spaces;
     QString fileName = exporter->copyFile(fullPath(), true);
     exporter->stream << m_linkDisplayItem.linkDisplay().toHtml(exporter, QUrl::fromLocalFile(exporter->dataFolderName + fileName), "").replace("\n", "\n" + spaces.fill(' ', indent + 1));
-}
-
-/** class SoundContent:
- */
-
-SoundContent::SoundContent(Note *parent, const QString &fileName)
-        : FileContent(parent, fileName)
-{
-    setFileName(fileName);
-    music = new Phonon::MediaObject(this);
-    music->setCurrentSource(Phonon::MediaSource(fullPath()));
-    Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
-    Phonon::Path path = Phonon::createPath(music, audioOutput);
-    connect(music, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State)));
-}
-
-void SoundContent::stateChanged(Phonon::State newState, Phonon::State oldState)
-{
-    qDebug() << "stateChanged " << oldState << " to " << newState;
-}
-
-QString SoundContent::zoneTip(int zone)
-{
-    return (zone == Note::Custom0 ? i18n("Open this sound") : QString());
-}
-
-void SoundContent::setHoveredZone(int oldZone, int newZone)
-{
-    if (newZone == Note::Custom0 || newZone == Note::Content) {
-        // Start the sound preview:
-        if (oldZone != Note::Custom0 && oldZone != Note::Content) { // Don't restart if it was already in one of those zones
-            if (music->state() == 1) {
-                music->play();
-
-            }
-        }
-    } else {
-//       Stop the sound preview, if it was started:
-        if (music->state() != 1) {
-            music->stop();
-//          delete music;//TODO implement this in slot connected with music alted signal
-//          music = 0;
-        }
-    }
-}
-
-
-QString SoundContent::messageWhenOpening(OpenMessage where)
-{
-    switch (where) {
-    case OpenOne:               return i18n("Opening sound...");
-    case OpenSeveral:           return i18n("Opening sounds...");
-    case OpenOneWith:           return i18n("Opening sound with...");
-    case OpenSeveralWith:       return i18n("Opening sounds with...");
-    case OpenOneWithDialog:     return i18n("Open sound with:");
-    case OpenSeveralWithDialog: return i18n("Open sounds with:");
-    default:                    return "";
-    }
 }
 
 /** class LinkContent:
@@ -2667,7 +2558,6 @@ void NoteFactory__loadNode(const QDomElement &content, const QString &lowerTypeN
     else if (lowerTypeName == "html")      new HtmlContent(parent, content.text(), lazyLoad);
     else if (lowerTypeName == "image")     new ImageContent(parent, content.text(), lazyLoad);
     else if (lowerTypeName == "animation") new AnimationContent(parent, content.text(), lazyLoad);
-    else if (lowerTypeName == "sound")     new SoundContent(parent, content.text());
     else if (lowerTypeName == "file")      new FileContent(parent, content.text());
     else if (lowerTypeName == "link") {
         bool autoTitle = content.attribute("title") == content.text();

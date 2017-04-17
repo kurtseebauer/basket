@@ -87,7 +87,7 @@ private:
   */
 namespace NoteType
 {
-enum Id { Group = 255, Text = 1, Html, Image, Animation, Sound, File, Link, CrossReference, Launcher, Color, Unknown }; // Always positive
+enum Id { Group = 255, Text = 1, Html, Image, Animation, File, Link, CrossReference, Launcher, Color, Unknown }; // Always positive
 }
 
 /** Abstract base class for every content type of basket note.
@@ -457,43 +457,6 @@ protected slots:
     void startFetchingUrlPreview();
 protected:
     KIO::PreviewJob *m_previewJob;
-};
-
-/** Real implementation of sound notes:
- * @author Sébastien Laoût
- */
-class SoundContent : public FileContent // A sound is a file with just a bit different user interaction
-{
-    Q_OBJECT
-public:
-    // Constructor and destructor:
-    SoundContent(Note *parent, const QString &fileName);
-    // Simple Generic Methods:
-    NoteType::Id type() const;
-    QString typeName() const;
-    QString lowerTypeName() const;
-    QString toHtml(const QString &imageName, const QString &cuttedFullPath);
-    bool    useFile() const;
-    bool    canBeSavedAs() const;
-    QString saveAsFilters() const;
-    bool    match(const FilterData &data);
-    QString editToolTipText() const;
-    // Complexe Generic Methods:
-    QString cssClass() const;
-    // Custom Zones:
-    QString zoneTip(int zone);
-    void    setHoveredZone(int oldZone, int newZone);
-    // Open Content or File:
-    QString messageWhenOpening(OpenMessage where);
-    QString customOpenCommand();
-    // Content-Specific Methods:
-    LinkLook* linkLook() {
-        return LinkLook::soundLook;
-    }
-    Phonon::MediaObject *music;
-private slots:
-    void stateChanged(Phonon::State, Phonon::State);
-
 };
 
 /** Real implementation of link notes:

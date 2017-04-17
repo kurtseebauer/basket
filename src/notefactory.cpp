@@ -20,29 +20,17 @@
 
 #include "notefactory.h"
 
-#include <QtCore/QString>
-#include <QtCore/QTextStream>
-#include <QtCore/QVector>
-#include <QtCore/QRegExp>
 #include <QtCore/QDir>
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
 #include <QtCore/QMimeData>
-#include <QtGui/QImage>
-#include <QtGui/QPixmap>
-#include <QtGui/QColor>
 #include <QGraphicsView>
 #include <QtGui/QImageReader>
 #include <QtGui/QMovie>
 #include <QtGui/QTextDocument> //For Qt::mightBeRichText(...)
 #include <QtGui/QBitmap> //For createHeuristicMask
-#include <QtCore/qnamespace.h>
 #include <QGuiApplication>
 #include <QFileDialog>
-#include <QUrl>
 #include <QMimeType>
 #include <QMimeDatabase>
-#include <QLocale>
 #include <QMenu>
 
 #include <KMessageBox>
@@ -58,7 +46,6 @@
 
 #include "basketscene.h"
 #include "basketlistview.h"
-#include "note.h"
 #include "notedrag.h"
 #include "global.h"
 #include "settings.h"
@@ -776,7 +763,6 @@ Note* NoteFactory::loadFile(const QString &fileName, NoteType::Id type, BasketSc
     case NoteType::Html:      new HtmlContent(note, fileName); break;
     case NoteType::Image:     new ImageContent(note, fileName); break;
     case NoteType::Animation: new AnimationContent(note, fileName); break;
-    case NoteType::Sound:     new SoundContent(note, fileName); break;
     case NoteType::File:      new FileContent(note, fileName); break;
     case NoteType::Launcher:  new LauncherContent(note, fileName); break;
     case NoteType::Unknown:   new UnknownContent(note, fileName); break;
@@ -814,7 +800,6 @@ NoteType::Id NoteFactory::typeForURL(const QUrl &url, BasketScene */*parent*/)
     else if (viewText  && maybeText(mimeType))             return NoteType::Text;
     else if (viewImage && maybeAnimation(mimeType))        return NoteType::Animation; // See Note::movieStatus(int)
     else if (viewImage && maybeImage(mimeType))            return NoteType::Image;     //  for more explanations
-    else if (viewSound && maybeSound(mimeType))            return NoteType::Sound;
     else                                                   return NoteType::File;
 }
 
@@ -994,7 +979,6 @@ Note* NoteFactory::createEmptyNote(NoteType::Id type, BasketScene *parent)
         return NoteFactory::createNoteColor(Qt::black, parent);
     default:
     case NoteType::Animation:
-    case NoteType::Sound:
     case NoteType::File:
     case NoteType::Unknown:
         return 0; // Not possible!
