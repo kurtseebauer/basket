@@ -24,6 +24,7 @@
 #include <QDesktopWidget>
 #include <QToolTip>
 #include <QLocale>
+#include <QScreen>
 
 #include <KWindowSystem>
 #include <KLocalizedString>
@@ -53,7 +54,8 @@ RegionGrabber::~RegionGrabber()
 
 void RegionGrabber::init()
 {
-    pixmap = QPixmap::grabWindow(QApplication::desktop()->winId());
+    pixmap = QApplication::screens().at(0)->grabWindow(QApplication::desktop()->winId());
+    // QPixmap::grabWindow(QApplication::desktop()->winId());
     showFullScreen();   //krazy:exclude=qmethods        -- Necessary for proper screenshot capture.
     resize(pixmap.size());
     move(0, 0);
