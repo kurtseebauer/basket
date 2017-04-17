@@ -92,6 +92,5 @@ add_subdirectory(tags)
 add_subdirectory(welcome)
 add_subdirectory(backgrounds)
 add_subdirectory(images)
-add_subdirectory(file-integration)
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
