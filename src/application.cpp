@@ -20,26 +20,18 @@
 
 #include "application.h"
 
-#include <QtCore/QString>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTimer>
 #include <QCommandLineParser>
 #include <QDir>
 
-#include <KLocalizedString>
 
 #include "global.h"
 #include "bnpview.h"
-#include "config.h"
-#include "aboutdata.h"
 #include "mainwindow.h"
 
-#ifdef WITH_LIBGIT2
-extern "C" {
-#include <git2.h>
-}
-#endif
+
 
 Application::Application(int &argc, char **argv)
         : QApplication(argc, argv)
@@ -52,26 +44,10 @@ Application::Application(int &argc, char **argv)
     connect(&m_service, &KDBusService::activateRequested, this, &Application::onActivateRequested);
 
     newInstance();
-
-
-    #ifdef WITH_LIBGIT2
-        #if LIBGIT2_SOVERSION >= 22
-            git_libgit2_init();
-        #else
-            git_threads_init();
-        #endif
-    #endif
 }
 
 Application::~Application()
 {
-    #ifdef WITH_LIBGIT2
-        #if LIBGIT2_SOVERSION >= 22
-            git_libgit2_shutdown();
-        #else
-            git_threads_shutdown();
-        #endif
-    #endif
 }
 
 int Application::newInstance()

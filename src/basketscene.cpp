@@ -97,7 +97,7 @@
 #include "tools.h"
 #include "debugwindow.h"
 #include "focusedwidgets.h"
-#include "gitwrapper.h"
+
 
 #include "config.h"
 
@@ -939,7 +939,7 @@ bool BasketScene::save()
 
 void BasketScene::commitEdit()
 {
-    GitWrapper::commitBasket(this);
+
 }
 
 void BasketScene::aboutToBeActivated()

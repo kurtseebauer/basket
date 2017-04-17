@@ -22,6 +22,8 @@
 #define GLOBAL_H
 
 #include "basket_export.h"
+#include "aboutdata.h"
+
 #include <KSharedConfig>
 
 class QString;
@@ -75,9 +77,6 @@ public:
     static QString gitFolder();         /// << @return e.g. "/home/username/.local/share/basket/.git/".
 
     // Various Things:
-    /** Initialize git repository if Version sync is enabled
-        @param savesFolder Path returned by savesFolder()  */
-    static void initializeGitIfNeeded(QString savesFolder);
     static QString openNoteIcon();      /// << @return the icon used for the "Open" action on notes.
     static KMainWindow* activeMainWindow(); /// << @returns Main window if it has focus (is active), otherwise NULL
     static MainWindow* mainWindow(); /// << @returns Main window (always not NULL after it has been actually created)

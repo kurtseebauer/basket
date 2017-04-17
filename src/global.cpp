@@ -21,15 +21,11 @@
 #include "global.h"
 
 #include <KMainWindow>
-#include <KConfig>
 
-#include <QtCore/QString>
 #include <QtCore/QDir>
-#include <QStandardPaths>
 #include <QApplication>
 
-#include "gitwrapper.h"
-#include "aboutdata.h"
+
 #include "bnpview.h"
 #include "settings.h"
 
@@ -64,7 +60,6 @@ QString Global::savesFolder()
             folder = new QString(Settings::dataFolder().endsWith("/") ? Settings::dataFolder() : Settings::dataFolder() + "/");
         } else { // The default path (should be that for most computers)
             folder = new QString(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + QLatin1Char('/') + "basket/");
-            initializeGitIfNeeded(*folder);
         }
     }
     return *folder;
@@ -89,13 +84,6 @@ QString Global::tempCutFolder()
 QString Global::gitFolder()
 {
     return savesFolder() + ".git/";
-}
-
-void Global::initializeGitIfNeeded(QString savesFolder)
-{
-    if (!QDir(savesFolder + ".git/").exists()) {
-        GitWrapper::initializeGitRepository(savesFolder);
-    }
 }
 
 QString Global::openNoteIcon() // FIXME: Now an edit icon

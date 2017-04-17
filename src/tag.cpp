@@ -37,7 +37,6 @@
 #include "bnpview.h"
 #include "tools.h"
 #include "basketscene.h"
-#include "gitwrapper.h"
 
 
 /** class State: */
@@ -455,8 +454,6 @@ void Tag::saveTags()
 {
     DEBUG_WIN << "Saving tags...";
     saveTagsTo(all, Global::savesFolder() + "tags.xml");
-
-    GitWrapper::commitTagsXml();
 }
 
 void Tag::saveTagsTo(QList<Tag*> &list, const QString &fullPath)

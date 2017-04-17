@@ -62,7 +62,6 @@
 #include <cstdlib>
 #include <unistd.h> // usleep
 
-#include "gitwrapper.h"
 #include "basketscene.h"
 #include "decoratedbasket.h"
 #include "tools.h"
@@ -220,8 +219,7 @@ void BNPView::lateInit()
         if (topLevelItemCount() <= 0) {
             // Create first basket:
             BasketFactory::newBasket(/*icon=*/"", /*name=*/i18n("General"), /*backgroundImage=*/"", /*backgroundColor=*/QColor(), /*textColor=*/QColor(), /*templateName=*/"1column", /*createIn=*/0);
-            GitWrapper::commitBasket(currentBasket());
-            GitWrapper::commitTagsXml();
+
         }
     }
 
@@ -995,8 +993,6 @@ void BNPView::save()
 
     // Write to Disk:
     BasketScene::safelySaveToFile(Global::basketsFolder() + "baskets.xml", data);
-
-    GitWrapper::commitBasketView();
 }
 
 void BNPView::save(QTreeWidget *listView, QTreeWidgetItem* item, QXmlStreamWriter &stream)
@@ -2182,7 +2178,7 @@ void BNPView::delBasket()
 
     doBasketDeletion(basket);
 
-    GitWrapper::commitDeleteBasket(basket);
+
 }
 
 void BNPView::doBasketDeletion(BasketScene *basket)
@@ -2310,8 +2306,6 @@ void BNPView::isLockedChanged()
 void BNPView::askNewBasket()
 {
     askNewBasket(0, 0);
-
-    GitWrapper::commitCreateBasket();
 }
 
 void BNPView::askNewBasket(BasketScene *parent, BasketScene *pickProperties)

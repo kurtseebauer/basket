@@ -77,7 +77,6 @@ void VersionSyncPage::on_buttonClearHistory_clicked()
         Tools::deleteRecursively(Global::gitFolder());
         ui->buttonClearHistory->setEnabled(false);
         setHistorySize(0);
-        Global::initializeGitIfNeeded(Global::savesFolder()); //restore .git
     }
 }
 

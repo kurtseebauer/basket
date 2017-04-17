@@ -20,40 +20,18 @@
 
 #include "basketproperties.h"
 
-#include <QtCore/QStringList>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QGridLayout>
-#include <QtGui/QPixmap>
-#include <QLabel>
-#include <QRadioButton>
-#include <QGroupBox>
-#include <QButtonGroup>
-#include <QStyle>
-#include <QLineEdit>
-#include <QLocale>
-#include <QApplication>
 #include <QDialogButtonBox>
-#include <QPushButton>
-#include <QVBoxLayout>
 
 #include <KComboBox>
-#include <KIconLoader>
-#include <KIconDialog>
-#include <KShortcutWidget>
 #include <KConfigGroup>
 #include <KLocalizedString>
 
 #include "backgroundmanager.h"
 #include "basketscene.h"
-#include "gitwrapper.h"
 #include "global.h"
 #include "kcolorcombo2.h"
 #include "variouswidgets.h"
 
-
-
-#include "ui_basketproperties.h"
 
 BasketPropertiesDialog::BasketPropertiesDialog(BasketScene *basket, QWidget *parent)
         : QDialog(parent)
@@ -211,7 +189,7 @@ void BasketPropertiesDialog::applyChanges()
     Ui::BasketPropertiesUi* propsUi = dynamic_cast<Ui::BasketPropertiesUi*>(this);
     // Should be called LAST, because it will emit the propertiesChanged() signal and the tree will be able to show the newly set Alt+Letter shortcut:
     m_basket->setAppearance(propsUi->icon->icon(), propsUi->name->text(), m_backgroundImagesMap[backgroundImage->currentIndex()], m_backgroundColor->color(), m_textColor->color());
-    GitWrapper::commitBasket(m_basket);
+
     m_basket->save();
 }
 

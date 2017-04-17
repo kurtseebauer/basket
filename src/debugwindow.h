@@ -21,6 +21,8 @@
 #ifndef DEBUGWINDOW_H
 #define DEBUGWINDOW_H
 
+#include <QDebug>
+
 #include <QWidget>
 
 class QVBoxLayout;
@@ -50,6 +52,6 @@ private:
     QTextBrowser *textBrowser;
 };
 
-#define DEBUG_WIN if (Global::debugWindow) *Global::debugWindow
+#define DEBUG_WIN qDebug()
 
 #endif // DEBUGWINDOW_H
