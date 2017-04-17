@@ -24,8 +24,7 @@ set(basketcommon_LIB_SRCS
     focusedwidgets.cpp
     formatimporter.cpp
     global.cpp
-    gitwrapper.cpp
-    htmlexporter.cpp
+        htmlexporter.cpp
     history.cpp
     kcolorcombo2.cpp
     likeback.cpp
