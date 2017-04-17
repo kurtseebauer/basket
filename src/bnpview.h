@@ -201,12 +201,10 @@ public slots:
     void propBasket();
     void delBasket();
     void doBasketDeletion(BasketScene *basket);
-    void password();
     void saveAsArchive();
     void openArchive();
     void delayedOpenArchive();
     void delayedOpenBasket();
-    void lockBasket();
     void hideOnEscape();
 
     void changedSelectedNotes();

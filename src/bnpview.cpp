@@ -75,7 +75,6 @@
 #include "regiongrabber.h"
 #include "basketlistview.h"
 #include "basketproperties.h"
-#include "password.h"
 #include "newbasketdialog.h"
 #include "notedrag.h"
 #include "formatimporter.h"
@@ -864,18 +863,6 @@ void BNPView::setupActions()
     a->setText(i18nc("Remove Basket", "&Remove"));
     a->setShortcut(0);
     m_actDelBasket = a;
-
-#ifdef HAVE_LIBGPGME
-    a = ac->addAction("basket_password", this, SLOT(password()));
-    a->setText(i18nc("Password protection", "Pass&word..."));
-    a->setShortcut(0);
-    m_actPassBasket = a;
-
-    a = ac->addAction("basket_lock", this, SLOT(lockBasket()));
-    a->setText(i18nc("Lock Basket", "&Lock"));
-    m_actionCollection->setDefaultShortcut(a, QKeySequence("Ctrl+L"));
-    m_actLockBasket = a;
-#endif
 
     /** Edit : ****************************************************************/
 
@@ -2217,33 +2204,6 @@ void BNPView::doBasketDeletion(BasketScene *basket)
 //  delete basket;
 }
 
-void BNPView::password()
-{
-#ifdef HAVE_LIBGPGME
-    QPointer<PasswordDlg> dlg = new PasswordDlg(qApp->activeWindow());
-    BasketScene *cur = currentBasket();
-
-    dlg->setType(cur->encryptionType());
-    dlg->setKey(cur->encryptionKey());
-    if (dlg->exec()) {
-        cur->setProtection(dlg->type(), dlg->key());
-        if (cur->encryptionType() != BasketScene::NoEncryption) {
-            //Clear metadata
-            Tools::deleteMetadataRecursively(cur->fullPath());
-            cur->lock();
-        }
-    }
-#endif
-}
-
-void BNPView::lockBasket()
-{
-#ifdef HAVE_LIBGPGME
-    BasketScene *cur = currentBasket();
-
-    cur->lock();
-#endif
-}
 
 void BNPView::saveAsArchive()
 {
@@ -2820,7 +2780,7 @@ void BNPView::enableActions()
     if (!basket)
         return;
     if (m_actLockBasket)
-        m_actLockBasket->setEnabled(!basket->isLocked() && basket->isEncrypted());
+        m_actLockBasket->setEnabled(!basket->isLocked());
     if (m_actPassBasket)
         m_actPassBasket->setEnabled(!basket->isLocked());
     m_actPropBasket->setEnabled(!basket->isLocked());

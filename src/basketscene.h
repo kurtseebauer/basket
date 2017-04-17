@@ -67,10 +67,6 @@ class NoteEditor;
 class Tag;
 class TransparentWidget;
 
-#ifdef HAVE_LIBGPGME
-class KGpgMe;
-#endif
-
 /**
   * @author Sébastien Laoût
   */
@@ -230,11 +226,6 @@ private:
     bool m_shouldConvertPlainTextNotes;
     QFrame* m_decryptBox;
     QPushButton* m_button;
-    int m_encryptionType;
-    QString m_encryptionKey;
-#ifdef HAVE_LIBGPGME
-    KGpgMe* m_gpg;
-#endif
     QTimer      m_inactivityAutoLockTimer;
     QTimer      m_commitdelay;
     void enableActions();
@@ -254,8 +245,6 @@ public slots:
     void commitEdit();
     void reload();
 public:
-    bool isEncrypted();
-    bool isFileEncrypted();
     bool isLocked()        {
         return m_locked;
     };
@@ -272,13 +261,6 @@ public:
     bool saveToFile(const QString& fullPath, const QByteArray& array); //[Encrypt and] save binary content
     static bool safelySaveToFile(const QString& fullPath, const QByteArray& array, unsigned long length);
     static bool safelySaveToFile(const QString& fullPath, const QString& string);
-    bool setProtection(int type, QString key);
-    int  encryptionType()  {
-        return m_encryptionType;
-    };
-    QString encryptionKey() {
-        return m_encryptionKey;
-    };
     bool saveAgain();
 
 /// BACKGROUND:

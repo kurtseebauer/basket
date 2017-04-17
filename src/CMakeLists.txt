@@ -28,7 +28,6 @@ set(basketcommon_LIB_SRCS
     htmlexporter.cpp
     history.cpp
     kcolorcombo2.cpp
-    kgpgme.cpp
     likeback.cpp
     linklabel.cpp
     newbasketdialog.cpp
@@ -38,7 +37,6 @@ set(basketcommon_LIB_SRCS
     noteedit.cpp
     notefactory.cpp
     noteselection.cpp
-    password.cpp
     regiongrabber.cpp
     settings.cpp
     settings_versionsync.cpp

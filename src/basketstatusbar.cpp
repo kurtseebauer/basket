@@ -186,7 +186,6 @@ bool BasketStatusBar::eventFilter(QObject * obj, QEvent * event)
     if (obj == m_lockStatus && event->type() == QEvent::MouseButtonPress) {
         QMouseEvent * mevent = dynamic_cast<QMouseEvent *>(event);
         if (mevent->button() & Qt::LeftButton) {
-            Global::bnpView->lockBasket();
             return true;
         } else {
             return QObject::eventFilter(obj, event); // standard event processing

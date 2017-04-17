@@ -42,7 +42,6 @@
 #include <KLocalizedString>
 #include <KIO/Global>
 
-#include "kgpgme.h"
 #include "basketscene.h"
 #include "linklabel.h"
 #include "variouswidgets.h"
@@ -225,10 +224,7 @@ void Settings::saveConfig()
     config.writeEntry("bigNotes",             bigNotes());
     config.writeEntry("autoBullet",           autoBullet());
     config.writeEntry("exportTextTags",       exportTextTags());
-#ifdef HAVE_LIBGPGME
-    if (KGpgMe::isGnuPGAgentAvailable())
-        config.writeEntry("useGnuPGAgent",    useGnuPGAgent());
-#endif
+
     config.writeEntry("blinkedFilter",        blinkedFilter());
     config.writeEntry("enableReLockTimeout",  enableReLockTimeout());
     config.writeEntry("reLockTimeoutMinutes", reLockTimeoutMinutes());
@@ -658,13 +654,6 @@ BasketsPage::BasketsPage(QWidget * parent, const char * name)
     connect(m_reLockTimeoutMinutes,       SIGNAL(valueChanged(int)), this,                   SLOT(changed()));
     connect(m_enableReLockTimeoutMinutes, SIGNAL(toggled(bool)),     m_reLockTimeoutMinutes, SLOT(setEnabled(bool)));
 
-#ifdef HAVE_LIBGPGME
-    m_useGnuPGAgent = new QCheckBox(i18n("Use GnuPG agent for &private/public key protected baskets"), protectionBox);
-    protectionLayout->addWidget(m_useGnuPGAgent);
-//  hLay->addWidget(m_useGnuPGAgent);
-    connect(m_useGnuPGAgent, SIGNAL(stateChanged(int)), this, SLOT(changed()));
-#endif
-
     layout->insertStretch(-1);
     load();
 }
@@ -687,16 +676,6 @@ void BasketsPage::load()
     // being true - otherwise, the reLockTimeoutMinutes widget is not disabled properly.
     m_enableReLockTimeoutMinutes->setChecked(Settings::enableReLockTimeout());
     m_reLockTimeoutMinutes->setValue(Settings::reLockTimeoutMinutes());
-#ifdef HAVE_LIBGPGME
-    m_useGnuPGAgent->setChecked(Settings::useGnuPGAgent());
-
-    if (KGpgMe::isGnuPGAgentAvailable()) {
-        m_useGnuPGAgent->setChecked(Settings::useGnuPGAgent());
-    } else {
-        m_useGnuPGAgent->setChecked(false);
-        m_useGnuPGAgent->setEnabled(false);
-    }
-#endif
 }
 
 void BasketsPage::save()
@@ -715,9 +694,7 @@ void BasketsPage::save()
 
     Settings::setEnableReLockTimeout(m_enableReLockTimeoutMinutes->isChecked());
     Settings::setReLockTimeoutMinutes(m_reLockTimeoutMinutes->value());
-#ifdef HAVE_LIBGPGME
-    Settings::setUseGnuPGAgent(m_useGnuPGAgent->isChecked());
-#endif
+
 }
 
 void BasketsPage::defaults()

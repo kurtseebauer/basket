@@ -101,13 +101,6 @@
 
 #include "config.h"
 
-#ifdef HAVE_LIBGPGME
-#include "kgpgme.h"
-#endif
-
-#ifdef HAVE_BALOO
-#include "nepomukintegration.h"
-#endif
 
 const int BasketScene::ANIMATION_DELAY = 2000;
 
@@ -659,8 +652,6 @@ void BasketScene::loadProperties(const QDomElement &properties)
     if (actionString == actionStrings[2]) action = 2;
 
     QDomElement protection = XMLWork::getElement(properties, "protection");
-    m_encryptionType = protection.attribute("type").toInt();
-    m_encryptionKey = protection.attribute("key");
 
     // Apply the Properties:
     setDisposition((free ? (mindMap ? 2 : 1) : 0), columnCount);
@@ -694,8 +685,6 @@ void BasketScene::saveProperties(QXmlStreamWriter &stream)
     stream.writeEndElement();
 
     stream.writeStartElement("protection");
-    stream.writeAttribute("key",  m_encryptionKey);
-    stream.writeAttribute("type", QString::number(m_encryptionType));
     stream.writeEndElement();
 
     stream.writeEndElement();
@@ -938,12 +927,6 @@ bool BasketScene::save()
     if (!saveToFile(fullPath() + ".basket", data)) {
         DEBUG_WIN << "Basket[" + folderName() + "]: <font color=red>FAILED to save</font>!";
         return false;
-#ifdef HAVE_BALOO
-    } else {
-        //The .basket file is saved; now updating the Metadata in Nepomuk
-        DEBUG_WIN << "NepomukIntegration: Updating Basket[" + folderName() + "]:"; // <font color=red>Updating Metadata</font>!";
-        nepomukIntegration::updateMetadata(this);
-#endif
     }
 
     Global::bnpView->setUnsavedStatus(false);
@@ -1008,13 +991,9 @@ void BasketScene::load()
             doc = 0;
         }
     }
-    if (isEncrypted())
-        DEBUG_WIN << "Basket is encrypted.";
     if (! doc) {
         DEBUG_WIN << "Basket[" + folderName() + "]: <font color=red>FAILED to load</font>!";
         m_loadingLaunched = false;
-        if (isEncrypted())
-            m_locked = true;
         Global::bnpView->notesStateChanged(); // Show "Locked" instead of "Loading..." in the statusbar
         return;
     }
@@ -1182,10 +1161,6 @@ BasketScene::BasketScene(QWidget *parent, const QString &folderName)
         , m_locked(false)
         , m_decryptBox(0)
         , m_button(0)
-        , m_encryptionType(NoEncryption)
-#ifdef HAVE_LIBGPGME
-        , m_gpg(0)
-#endif
         , m_backgroundPixmap(0)
         , m_opaqueBackgroundPixmap(0)
         , m_selectedBackgroundPixmap(0)
@@ -1211,7 +1186,7 @@ BasketScene::BasketScene(QWidget *parent, const QString &folderName)
         , m_leftEditorBorder(0)
         , m_rightEditorBorder(0)
         , m_redirectEditActions(false)
-	, m_editorTrackMouseEvent(false)
+        , m_editorTrackMouseEvent(false)
         , m_editorWidth(-1)
         , m_editorHeight(-1)
         , m_doNotCloseEditor(false)
@@ -1261,11 +1236,6 @@ BasketScene::BasketScene(QWidget *parent, const QString &folderName)
     connect(&m_timerCountsChanged,       SIGNAL(timeout()),   this, SLOT(countsChangedTimeOut()));
     connect(&m_inactivityAutoSaveTimer,  SIGNAL(timeout()),   this, SLOT(inactivityAutoSaveTimeout()));
     connect(&m_inactivityAutoLockTimer,  SIGNAL(timeout()),   this, SLOT(inactivityAutoLockTimeout()));
-
-#ifdef HAVE_LIBGPGME
-    m_gpg = new KGpgMe();
-#endif
-    m_locked = isFileEncrypted();
 
     //setup the delayed commit timer
     m_commitdelay.setSingleShot(true);
@@ -2962,9 +2932,7 @@ BasketScene::~BasketScene()
     m_commitdelay.stop();	//we don't know how long deleteNotes() last so we want to make extra sure that nobody will commit in between
     if (m_decryptBox)
         delete m_decryptBox;
-#ifdef HAVE_LIBGPGME
-    delete m_gpg;
-#endif
+
     deleteNotes();
 
 	if(m_view)
@@ -3097,19 +3065,11 @@ void BasketScene::drawForeground ( QPainter * painter, const QRectF & rect )
             layout->setContentsMargins(11, 11, 11, 11);
             layout->setSpacing(6);
 
-#ifdef HAVE_LIBGPGME
-            m_button = new QPushButton(m_decryptBox);
-            m_button->setText(i18n("&Unlock"));
-            layout->addWidget(m_button, 1, 2);
-            connect(m_button, SIGNAL(clicked()), this, SLOT(unlock()));
-#endif
             QLabel* label = new QLabel(m_decryptBox);
             QString text = "<b>" + i18n("Password protected basket.") + "</b><br/>";
-#ifdef HAVE_LIBGPGME
-            label->setText(text + i18n("Press Unlock to access it."));
-#else
+
             label->setText(text + i18n("Encryption is not supported by<br/>this version of %1.", QGuiApplication::applicationDisplayName()));
-#endif
+
             label->setAlignment(Qt::AlignTop);
             layout->addWidget(label, 0, 1, 1, 2);
             QLabel* pixmap = new QLabel(m_decryptBox);
@@ -3132,9 +3092,7 @@ void BasketScene::drawForeground ( QPainter * painter, const QRectF & rect )
 	{
             m_decryptBox->show();
         }
-#ifdef HAVE_LIBGPGME
-        m_button->setFocus();
-#endif
+
         m_decryptBox->move((m_view->viewport()->width() - m_decryptBox->width()) / 2,
                            (m_view->viewport()->height() - m_decryptBox->height()) / 2);
     } 
@@ -3841,13 +3799,6 @@ void BasketScene::closeBasket()
 {
     closeEditor();
     unbufferizeAll(); // Keep the memory footprint low
-    if (isEncrypted()) {
-        if (Settings::enableReLockTimeout()) {
-            int seconds = Settings::reLockTimeoutMinutes() * 60;
-            m_inactivityAutoLockTimer.setSingleShot(true);
-            m_inactivityAutoLockTimer.start(seconds * 1000);
-        }
-    }
 }
 
 void BasketScene::openBasket()
@@ -4548,8 +4499,6 @@ void BasketScene::slotCopyingDone2(KIO::Job *job,
     DEBUG_WIN << "Copy finished, load note: " + to.path() + (note ? "" : " --- NO CORRESPONDING NOTE");
     if (note != 0L) {
         note->content()->loadFromFile(/*lazyLoad=*/false);
-        if (isEncrypted())
-            note->content()->saveToFile();
         if (m_focusedNote == note)   // When inserting a new note we ensure it visble
             ensureNoteVisible(note); //  But after loading it has certainly grown and if it was
     }                                //  on bottom of the basket it's not visible entirly anymore
@@ -5111,36 +5060,6 @@ void BasketScene::updateModifiedNotes()
     m_modifiedFiles.clear();
 }
 
-bool BasketScene::setProtection(int type, QString key)
-{
-#ifdef HAVE_LIBGPGME
-    if (type == PasswordEncryption || // Ask a new password
-            m_encryptionType != type || m_encryptionKey != key) {
-        int savedType = m_encryptionType;
-        QString savedKey = m_encryptionKey;
-
-        m_encryptionType = type;
-        m_encryptionKey = key;
-        m_gpg->clearCache();
-
-        if (saveAgain()) {
-            emit propertiesChanged(this);
-        } else {
-            m_encryptionType = savedType;
-            m_encryptionKey = savedKey;
-            m_gpg->clearCache();
-            return false;
-        }
-    }
-    return true;
-#else
-    m_encryptionType = type;
-    m_encryptionKey = key;
-
-    return false;
-#endif
-}
-
 bool BasketScene::saveAgain()
 {
     bool result = false;
@@ -5171,60 +5090,15 @@ bool BasketScene::loadFromFile(const QString &fullPath, QString *string)
         return false;
 }
 
-bool BasketScene::isEncrypted()
-{
-    return (m_encryptionType != NoEncryption);
-}
-
-bool BasketScene::isFileEncrypted()
-{
-    QFile file(fullPath() + ".basket");
-
-    if (file.open(QIODevice::ReadOnly)) {
-        // Should be ASCII anyways
-        QString line = file.readLine(32);
-        if (line.startsWith("-----BEGIN PGP MESSAGE-----"))
-            return true;
-    }
-    return false;
-}
 
 bool BasketScene::loadFromFile(const QString &fullPath, QByteArray *array)
 {
     QFile file(fullPath);
-    bool encrypted = false;
 
     if (file.open(QIODevice::ReadOnly)) {
         *array = file.readAll();
-        QByteArray magic = "-----BEGIN PGP MESSAGE-----";
-        int i = 0;
-
-        if (array->size() > magic.size())
-            for (i = 0; array->at(i) == magic[i]; ++i)
-                ;
-        if (i == magic.size()) {
-            encrypted = true;
-        }
+       
         file.close();
-#ifdef HAVE_LIBGPGME
-        if (encrypted) {
-            QByteArray tmp(*array);
-
-            tmp.detach();
-            // Only use gpg-agent for private key encryption since it doesn't
-            // cache password used in symmetric encryption.
-            m_gpg->setUseGnuPGAgent(Settings::useGnuPGAgent() && m_encryptionType == PrivateKeyEncryption);
-            if (m_encryptionType == PrivateKeyEncryption)
-                m_gpg->setText(i18n("Please enter the password for the following private key:"), false);
-            else
-                m_gpg->setText(i18n("Please enter the password for the basket <b>%1</b>:", basketName()), false); // Used when decrypting
-            return m_gpg->decrypt(tmp, array);
-        }
-#else
-        if (encrypted) {
-            return false;
-        }
-#endif
         return true;
     } else
         return false;
@@ -5239,44 +5113,7 @@ bool BasketScene::saveToFile(const QString& fullPath, const QString& string)
 bool BasketScene::saveToFile(const QString &fullPath, const QByteArray &array)
 {
     ulong length = array.size();
-
-    bool success = true;
-    QByteArray tmp;
-
-#ifdef HAVE_LIBGPGME
-    if (isEncrypted()) {
-        QString key = QString::null;
-
-        // We only use gpg-agent for private key encryption and saving without
-        // public key doesn't need one.
-        m_gpg->setUseGnuPGAgent(false);
-        if (m_encryptionType == PrivateKeyEncryption) {
-            key = m_encryptionKey;
-            // public key doesn't need password
-            m_gpg->setText("", false);
-        } else
-            m_gpg->setText(i18n("Please assign a password to the basket <b>%1</b>:", basketName()), true); // Used when defining a new password
-
-        success = m_gpg->encrypt(array, length, &tmp, key);
-        length = tmp.size();
-    } else
-        tmp = array;
-
-#else
-    success = !isEncrypted();
-    if (success)
-        tmp = array;
-#endif
-    /*if (success && (success = file.open(QIODevice::WriteOnly))){
-        success = (file.write(tmp) == (Q_LONG)tmp.size());
-        file.close();
-    }*/
-
-
-    if (success)
-      return safelySaveToFile(fullPath, tmp, length);
-    else
-      return false;
+    return safelySaveToFile(fullPath, array, length);
 }
 
 /**
@@ -5342,13 +5179,4 @@ bool BasketScene::saveToFile(const QString &fullPath, const QByteArray &array)
 
 void BasketScene::lock()
 {
-#ifdef HAVE_LIBGPGME
-    closeEditor();
-    m_gpg->clearCache();
-    m_locked = true;
-    enableActions();
-    deleteNotes();
-    m_loaded = false;
-    m_loadingLaunched = false;
-#endif
 }
